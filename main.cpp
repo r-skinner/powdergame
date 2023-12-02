@@ -7,12 +7,39 @@
 #define TEXT_LOADER_IMPLEMENTATION
 #include "textloader.h"
 
-#define PERLIN_IMPLEMENTATION
-#include "perlin.h"
-
 GLFWwindow* WINDOW;
+
+struct PGConfig {
+    double ratio;
+};
+
+PGConfig load_config() {
+    std::string CONFIGTXT;
+    load_text("CONFIG.txt", CONFIGTXT);
+    std::istringstream sstream(CONFIGTXT);
+
+    PGConfig theConfig;
+
+    std::string word;
+    while(sstream >> word) {
+        if(word == "Ratio:") {
+            sstream >> word;
+            theConfig.ratio = std::stod(word);
+        }
+    }
+    return theConfig;
+}
+
+
 int WWIDTH = 1080;
 int WHEIGHT = 760;
+
+PGConfig CONFIG = load_config();
+
+double RATIO = CONFIG.ratio;
+
+int DWIDTH = static_cast<int>(WWIDTH * RATIO);
+int DHEIGHT = static_cast<int>(WHEIGHT * RATIO);
 
 GLuint SHADER_PROG1;
 GLuint TEXTURE_ID;
@@ -24,9 +51,13 @@ double LAST_FRAME = 0;
 //MOUSE
 bool MOUSE_CLICKED = false;
 
-std::vector<GLubyte> PIXELS(WWIDTH * WHEIGHT * 3);
+std::vector<GLubyte> PIXELS(DWIDTH * DHEIGHT * 3);
 
-Perlin p;
+void randomize_noise_test() {
+    for(GLubyte &a : PIXELS) {
+        a = static_cast<GLubyte>(rand() % 254);
+    }
+}
 
 void update_time() {
     double current_frame = glfwGetTime();
@@ -49,7 +80,12 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
     if(MOUSE_CLICKED) {
         int yp = WHEIGHT - ypos;
-        int index = (yp * (WWIDTH*3)) + (xpos * 3);
+
+        int dx, dy;
+        dx = static_cast<int>(xpos*RATIO);
+        dy = static_cast<int>(yp*RATIO);
+
+        int index = (dy * (DWIDTH*3)) + (dx * 3);
         PIXELS[index] = 254;
         PIXELS[index+1] = 254;
         PIXELS[index+2] = 254;
@@ -57,6 +93,8 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 }
 
 int main() {
+    std::cout << "Display width: " << DWIDTH << '\n' 
+              << "Display height: " << DHEIGHT << '\n';
     glfwInit();
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
     if (!(WINDOW = glfwCreateWindow(WWIDTH, WHEIGHT, "Powder Game-o", NULL, NULL))) {
@@ -95,7 +133,7 @@ int main() {
     glGenTextures(1, &TEXTURE_ID);
     glBindTexture(GL_TEXTURE_2D, TEXTURE_ID);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, WWIDTH, WHEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, DWIDTH, DHEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -135,8 +173,8 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         glUseProgram(SHADER_PROG1);
-        glBindTexture(GL_TEXTURE_2D, TEXTURE_ID);
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, WWIDTH, WHEIGHT, GL_RGB, GL_UNSIGNED_BYTE, PIXELS.data());
+        randomize_noise_test();
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, DWIDTH, DHEIGHT, GL_RGB, GL_UNSIGNED_BYTE, PIXELS.data());
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
