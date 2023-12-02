@@ -17,7 +17,7 @@ private:
 
 };
 
-#ifdef PERLIN_IMP
+#ifdef PERLIN_IMPLEMENTATION
 
 Perlin::Perlin() {
 	int permutation[] = { 151,160,137,91,90,15,

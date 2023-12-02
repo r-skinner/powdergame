@@ -7,7 +7,7 @@
 #define TEXT_LOADER_IMPLEMENTATION
 #include "textloader.h"
 
-#define PERLIN_IMP
+#define PERLIN_IMPLEMENTATION
 #include "perlin.h"
 
 GLFWwindow* WINDOW;
@@ -32,37 +32,6 @@ void update_time() {
     double current_frame = glfwGetTime();
     DELTA_TIME = current_frame - LAST_FRAME;
     LAST_FRAME = current_frame;
-}
-
-
-void randomize_noise_test() {
-    static double currx = 0.0;
-    static double curry = 0.0;
-    static double currz = 0.0;
-
-    currx += DELTA_TIME;
-    curry += DELTA_TIME;
-    currz += DELTA_TIME;
-    // for(GLubyte &a : PIXELS) {
-    //     a = static_cast<GLubyte>(p.noise());
-    // }
-    for(int x = 0; x < WHEIGHT; x++) {
-        for(int i = 0; i < WWIDTH*3; i+=3) {
-            int index = x * WWIDTH*3 + i;
-            PIXELS[index] = static_cast<GLubyte>(
-                std::min(
-                    std::max(
-                        p.noise(currx + (0.03 * i), curry + (0.03 * x), currz)*255, 0.0), 254.0));
-            PIXELS[index+1] = static_cast<GLubyte>(
-                std::min(
-                    std::max(
-                        p.noise(currx + (0.03 * i), curry + (0.03 * x), currz)*255, 0.0), 254.0));
-            PIXELS[index+2] = static_cast<GLubyte>(
-                std::min(
-                    std::max(
-                        p.noise(currx + (0.03 * i), curry + (0.03 * x), currz)*255, 0.0), 254.0));
-        }
-    }
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
