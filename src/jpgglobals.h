@@ -11,7 +11,7 @@ GLFWwindow* WINDOW;
 
 std::array<glm::vec3, 16> colorPalette = {
     glm::vec3(0.0f, 0.0f, 0.0f),//black 0
-    glm::vec3(0.5f, 0.4f, 0.3f),//tan 1
+    glm::vec3(0.6f, 0.5f, 0.3f),//tan 1
     glm::vec3(0.0f, 1.0f, 0.0f),//green 2
     glm::vec3(1.0f, 1.0f, 0.0f),//yellow 3
     glm::vec3(1.0f, 0.5f, 0.0f),//orange 4

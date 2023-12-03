@@ -1,1 +1,1 @@
-Ratio: 0.3
+Ratio: 0.1
