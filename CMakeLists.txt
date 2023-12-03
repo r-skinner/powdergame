@@ -3,11 +3,17 @@ cmake_minimum_required(VERSION 3.10)
 # set the project name
 project(powdergameo)
 
-add_executable(main main.cpp)
+add_executable(main src/main.cpp)
 
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+if(MSVC)
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+endif()
+
+target_include_directories(main PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
 find_package(imgui CONFIG REQUIRED)
 target_link_libraries(main PRIVATE imgui::imgui)
