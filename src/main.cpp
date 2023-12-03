@@ -117,6 +117,8 @@ int main() {
     glUseProgram(SHADER_PROG1);
     glUniform3fv(glGetUniformLocation(SHADER_PROG1, "colorPalette"), 16, glm::value_ptr(colorPalette[0]));
 
+    double updateSimTimer = 0.0;
+
     while(!glfwWindowShouldClose(WINDOW)) {
 
         glClearColor(0.0f,0.0f,0.0f,1.0f);
@@ -127,6 +129,14 @@ int main() {
         }
 
         //jpg::randomize_noise_test();
+        if(updateSimTimer > 0.025) {
+            jpg::UPDATE_SIMULATION(PIXELS, DWIDTH, DHEIGHT);
+
+            updateSimTimer = 0.0;
+        } else {
+            updateSimTimer += DELTA_TIME;
+        }
+
         glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, DWIDTH, DHEIGHT, GL_RED, GL_UNSIGNED_BYTE, PIXELS.data());
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
