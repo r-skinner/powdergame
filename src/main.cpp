@@ -3,7 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <vector>
+#include <vector> 
 #include <cstdlib>
 #include <array>
 
@@ -52,6 +52,7 @@ int main() {
 
     glfwSetMouseButtonCallback(WINDOW, mouse_button_callback);
     glfwSetCursorPosCallback(WINDOW, cursor_position_callback);
+    glfwSetKeyCallback(WINDOW, key_callback);
 
     std::string vertexShaderSrc;
     std::string fragmentShaderSrc;
@@ -96,6 +97,7 @@ int main() {
          1.0f,  1.0f,  1.0f, 1.0f
     };
 
+
     GLuint VAO, VBO;
     glGenVertexArrays(1, &VAO);
     glGenBuffers(1, &VBO);
@@ -125,12 +127,14 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         if(MOUSE_CLICKED) {
-            jpg::draw_at_cursor(MOUSEX, MOUSEY, PIXELS, WHEIGHT, RATIO, DWIDTH);
+            jpg::draw_at_cursor(MOUSEX, MOUSEY, PIXELS, WHEIGHT, RATIO, DWIDTH, DHEIGHT, SELECTED_COLOR, ODD_FRAME);
         }
+
+        PIXELS[DWIDTH * (DHEIGHT-1)] = SELECTED_COLOR;
 
         //jpg::randomize_noise_test();
         if(updateSimTimer > 0.025) {
-            jpg::UPDATE_SIMULATION(PIXELS, DWIDTH, DHEIGHT);
+            jpg::UPDATE_SIMULATION(PIXELS, DWIDTH, DHEIGHT, POWDER_FUNCS, ODD_FRAME, densities);
 
             updateSimTimer = 0.0;
         } else {

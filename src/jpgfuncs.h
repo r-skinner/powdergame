@@ -1,25 +1,18 @@
 #include <vector>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include "pginfo.h"
+#include <functional>
 
 namespace jpg {
 
-void draw_at_cursor(double xpos, double ypos, std::vector<GLubyte> &pixs, int wheight, double ratio, int dwidth);
+void draw_at_cursor(double xpos, double ypos, std::vector<GLubyte> &pixs, int wheight, double ratio, int dwidth, int dheight, int selectedColor, bool oddf);
 
 void update_time(double &deltat, double &lastframe);
 
 void randomize_noise_test(std::vector<GLubyte> &pixs);
 
-void UPDATE_SIMULATION(std::vector<GLubyte> &pixs, int dwidth, int dheight);
-
-
-
-
-
-
-
-
-
+void UPDATE_SIMULATION(std::vector<GLubyte> &pixs, int dwidth, int dheight, std::array<std::function<void(std::vector<GLubyte>&, int i, PGInfo&, GLubyte, std::array<GLubyte, 16>)>, 16> &powderFuncs, bool &oddf, std::array<GLubyte, 16>& densities);
 
 
 
@@ -35,17 +28,12 @@ void UPDATE_SIMULATION(std::vector<GLubyte> &pixs, int dwidth, int dheight);
 
 #ifdef JPGFUNCS_IMPLEMENTATION
 
-void UPDATE_SIMULATION(std::vector<GLubyte> &pixs, int dwidth, int dheight) {
-    static bool oddFrame = false;
+void UPDATE_SIMULATION(std::vector<GLubyte> &pixs, int dwidth, int dheight, std::array<std::function<void(std::vector<GLubyte>&, int i, PGInfo&, GLubyte, std::array<GLubyte, 16>)>, 16> &powderFuncs, bool &oddf, std::array<GLubyte, 16>& densities) {
 
-    static GLubyte oddBit = 0b10000000;
-    static GLubyte clearOddBit = 0b01111111;
+    static PGInfo info;
 
-    static GLubyte colorBits = 0b00001111;
-    static GLubyte clearColorBits = 0b11110000;
-
-    GLubyte targetOddBit = oddFrame ? 0b10000000 : 0b00000000;
-    GLubyte nonTargetOddBit = oddFrame ? 0b00000000 : 0b10000000;
+    info.targetOddBit = info.oddFrame ? 0b10000000 : 0b00000000;
+    info.nonTargetOddBit = info.oddFrame ? 0b00000000 : 0b10000000;
     
     //std::cout << "up " << (oddFrame ? "t" : "f") << '\n';
 
@@ -53,41 +41,19 @@ void UPDATE_SIMULATION(std::vector<GLubyte> &pixs, int dwidth, int dheight) {
         for(int x = 0; x < dwidth; x++) {
             int i = y * dwidth + x;
 
-            GLubyte colorBitsHere = pixs[i] & colorBits;
+            GLubyte colorBitsHere = pixs[i] & info.COLOR_BITS;
 
-            if(colorBitsHere != 0b00000000 && y > 0 && (pixs[i] & oddBit) == targetOddBit) {
-                int bottomi = i - dwidth;
-                int bottomli = bottomi - 1;
-                int bottomri = bottomi + 1;
-                if((pixs[bottomi] & colorBits) == 0) {
-                    pixs[i] &= clearColorBits;
-                    pixs[bottomi] |= colorBitsHere;
-                    pixs[bottomi] &= clearOddBit;
-                    pixs[bottomi] |= nonTargetOddBit;
-                } else {
-                    if(oddFrame) {
-                        if((pixs[bottomri] & colorBits) == 0) {
-                            pixs[i] &= clearColorBits;
-                            pixs[bottomri] |= colorBitsHere;
-                            pixs[bottomri] &= clearOddBit;
-                            pixs[bottomri] |= nonTargetOddBit;
-                        }
-                    } else {
-                        if((pixs[bottomli] & colorBits) == 0) {
-                            pixs[i] &= clearColorBits;
-                            pixs[bottomli] |= colorBitsHere;
-                            pixs[bottomli] &= clearOddBit;
-                            pixs[bottomli] |= nonTargetOddBit;
-                        }
-                    }
-                }
+            if(colorBitsHere != 0b00000000 && y > 0 && (pixs[i] & info.ODD_BIT) == info.targetOddBit
+               && i != dwidth*(dheight-1)) {
+                powderFuncs[colorBitsHere](pixs, i, info, colorBitsHere, densities);
             }
         }
     }
-    oddFrame = !oddFrame;
+    info.oddFrame = !info.oddFrame;
+    oddf = info.oddFrame;
 }
 
-void draw_at_cursor(double xpos, double ypos, std::vector<GLubyte> &pixs, int wheight, double ratio, int dwidth) {
+void draw_at_cursor(double xpos, double ypos, std::vector<GLubyte> &pixs, int wheight, double ratio, int dwidth, int dheight, int selectedColor, bool oddf) {
     int yp = wheight - static_cast<int>(ypos);
 
     int dx, dy;
@@ -95,7 +61,20 @@ void draw_at_cursor(double xpos, double ypos, std::vector<GLubyte> &pixs, int wh
     dy = static_cast<int>(yp*ratio);
 
     int index = dy * dwidth + dx;
-    pixs[index] = 1;
+
+    static bool isoddpix = false;
+
+    GLubyte theByte = selectedColor;
+    if(isoddpix) {
+        std::cout << "is odd" << '\n';
+        theByte |= PGInfo::LIQUID_TRAV_LEFT_BIT;
+    } else {
+        std::cout << "is not odd" << '\n';
+    }
+    if(index != dwidth*(dheight-1)) {
+        pixs[index] = theByte;
+    }
+    isoddpix = !isoddpix;
 }
 
 void update_time(double &deltat, double &lastframe) {
