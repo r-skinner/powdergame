@@ -1,57 +1,40 @@
 #include <GL/glew.h>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "main.h"
 #include "config.h"
 #include "utils.h"
 #include "jpgfuncs.h"
 #include "jpgglobals.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
-
 using namespace std;
 
-//Uncomment this stuff to remove console when done:
-//#include <Windows.h>
-//int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
+double updateSimTimer = 0.0;
+
 int main() {
     printf("Display width: %d\n", WINDOW_WIDTH);
     printf("Display height: %d\n", WINDOW_HEIGHT);
 
+    GLFWwindow *window;
     std::vector<GLubyte> PIXELS(DISPLAY_WIDTH * DISPLAY_HEIGHT);
 
     glfwInit();
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-    GLFWwindow* WINDOW;
-    if (!(WINDOW = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Jackson's Powder Game", nullptr, nullptr))) {
+    if (!(window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Jackson's Powder Game", nullptr, nullptr))) {
         glfwTerminate();
         return EXIT_FAILURE;
     }
 
-    // Load the icon image
-    int width, height, channels;
-    unsigned char* iconData = stbi_load("assets/pngicon.png", &width, &height, &channels, 0);
-    if (!iconData) {
-        fprintf(stderr,"Failed to load icon: %s", stbi_failure_reason());
-    }
-    if (iconData) {
-        GLFWimage icon;
-        icon.width = width;
-        icon.height = height;
-        icon.pixels = iconData;
+    load_icon(window, "assets/pngicon.png");
 
-        glfwSetWindowIcon(WINDOW, 1, &icon);
-        stbi_image_free(iconData);
-    }
-
-    glfwMakeContextCurrent(WINDOW);
+    glfwMakeContextCurrent(window);
     glewInit();
 
-    glfwSetMouseButtonCallback(WINDOW, mouse_button_callback);
-    glfwSetCursorPosCallback(WINDOW, cursor_position_callback);
-    glfwSetKeyCallback(WINDOW, key_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
+    glfwSetCursorPosCallback(window, cursor_position_callback);
+    glfwSetKeyCallback(window, key_callback);
 
+    // todo load shader
     string vertexShaderSrc;
     string fragmentShaderSrc;
     load_text("assets/shaders/vert.glsl", vertexShaderSrc);
@@ -66,35 +49,24 @@ int main() {
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
     glShaderSource(fragmentShader, 1, &fragGLChars, nullptr);
     glCompileShader(fragmentShader);
+    //todo end load shader
 
-    SHADER_PROG1 = glCreateProgram();
-    glAttachShader(SHADER_PROG1, vertexShader);
-    glAttachShader(SHADER_PROG1, fragmentShader);
-    glLinkProgram(SHADER_PROG1);
+    GLuint shader_program = glCreateProgram();
+    glAttachShader(shader_program, vertexShader);
+    glAttachShader(shader_program, fragmentShader);
+    glLinkProgram(shader_program);
 
     glDeleteShader(vertexShader);
     glDeleteShader(fragmentShader);
 
+    GLuint TEXTURE_ID;
     glGenTextures(1, &TEXTURE_ID);
     glBindTexture(GL_TEXTURE_2D, TEXTURE_ID);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, DISPLAY_WIDTH, DISPLAY_HEIGHT, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, DISPLAY_WIDTH, DISPLAY_HEIGHT, 0, GL_RED, GL_UNSIGNED_BYTE, nullptr);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    //The quad that the entire screen is drawn on
-    float quadVertices[] = {
-        // positions   // texture coords
-        -1.0f,  1.0f,  0.0f, 1.0f,
-        -1.0f, -1.0f,  0.0f, 0.0f,
-         1.0f, -1.0f,  1.0f, 0.0f,
-
-        -1.0f,  1.0f,  0.0f, 1.0f,
-         1.0f, -1.0f,  1.0f, 0.0f,
-         1.0f,  1.0f,  1.0f, 1.0f
-    };
-
 
     GLuint VAO, VBO;
     glGenVertexArrays(1, &VAO);
@@ -102,54 +74,58 @@ int main() {
 
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, QUAD_VERTS_LEN, QUAD_VERTS, GL_STATIC_DRAW);
 
     // position attribute
-    GLint pos_attrib = glGetAttribLocation(SHADER_PROG1, "pos");
+    GLint pos_attrib = glGetAttribLocation(shader_program, "pos");
     glEnableVertexAttribArray(pos_attrib);
-    glVertexAttribPointer(pos_attrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glVertexAttribPointer(pos_attrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *) nullptr);
 
     // texture coord attribute
-    GLint tex_attrib = glGetAttribLocation(SHADER_PROG1, "texcoord");
+    GLint tex_attrib = glGetAttribLocation(shader_program, "texcoord");
     glEnableVertexAttribArray(tex_attrib);
-    glVertexAttribPointer(tex_attrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
+    glVertexAttribPointer(tex_attrib, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void *) (2 * sizeof(float)));
 
-    glUseProgram(SHADER_PROG1);
-    glUniform3fv(glGetUniformLocation(SHADER_PROG1, "colorPalette"), 16, glm::value_ptr(colorPalette[0]));
+    glUseProgram(shader_program);
+    glUniform3fv(glGetUniformLocation(shader_program, "colorPalette"), 16, glm::value_ptr(colorPalette[0]));
 
-    double updateSimTimer = 0.0;
-
-    while(!glfwWindowShouldClose(WINDOW)) {
-
-        glClearColor(0.0f,0.0f,0.0f,1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        if(MOUSE_CLICKED) {
-            draw_at_cursor(MOUSEX, MOUSEY, PIXELS, WINDOW_HEIGHT, RATIO, DISPLAY_WIDTH, DISPLAY_HEIGHT, SELECTED_COLOR, ODD_FRAME);
-        }
-
-        PIXELS[DISPLAY_WIDTH * (DISPLAY_HEIGHT-1)] = SELECTED_COLOR;
-
-        //jpg::randomize_noise_test();
-        if(updateSimTimer > 0.025) {
-            UPDATE_SIMULATION(PIXELS, DISPLAY_WIDTH, DISPLAY_HEIGHT, POWDER_FUNCS, ODD_FRAME, densities);
-
-            updateSimTimer = 0.0;
-        } else {
-            updateSimTimer += DELTA_TIME;
-        }
-
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, PIXELS.data());
-
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
-        glfwSwapBuffers(WINDOW);
-        glfwPollEvents();
-        update_time(DELTA_TIME, LAST_FRAME);
+    while (!glfwWindowShouldClose(window)) {
+        update(window, PIXELS);
     }
 
-    glfwDestroyWindow(WINDOW);
+    glfwDestroyWindow(window);
     glfwTerminate();
 
     return EXIT_SUCCESS;
+}
+
+void update(GLFWwindow *window, vector<GLubyte> &PIXELS) {
+
+    bool isDrawNeeded = false;
+    if (mouse.left_click) {
+        drawAtCursor(PIXELS, SELECTED_COLOR);
+        isDrawNeeded = true;
+    }
+
+    // set top corner
+    PIXELS[DISPLAY_WIDTH * (DISPLAY_HEIGHT - 1)] = SELECTED_COLOR;
+
+    if (updateSimTimer > UPDATE_INTERVAL) {
+        updateSimTimer = 0.0;
+        updateSimulations(PIXELS, ODD_FRAME);
+        isDrawNeeded = true;
+    } else {
+        updateSimTimer += DELTA_TIME;
+    }
+    if (isDrawNeeded) draw(window, PIXELS);
+    updateTime(DELTA_TIME, LAST_FRAME);
+}
+
+void draw(GLFWwindow *window, vector<GLubyte> &PIXELS) {
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+    glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, PIXELS.data());
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+    glfwSwapBuffers(window);
+    glfwPollEvents();
 }

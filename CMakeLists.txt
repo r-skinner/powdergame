@@ -9,6 +9,7 @@ add_executable(main
         src/jpgglobals.cpp
         src/jpgfuncs.cpp
         src/utils.cpp
+        src/materials/material.cpp
 )
 
 # specify the C++ standard

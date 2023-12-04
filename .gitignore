@@ -1,5 +1,4 @@
 /build
-*.exe
 glew32.dll
 .vscode/
 cmake-build-debug

@@ -1,27 +1,10 @@
-#include <cstdio>
 #include "config.h"
 #include "jpgglobals.h"
 
-GLuint SHADER_PROG1;
-GLuint TEXTURE_ID;
 double DELTA_TIME = 0;
 double LAST_FRAME = 0;
-bool MOUSE_CLICKED = false;
-double MOUSEX = 0;
-double MOUSEY = 0;
+
 bool ODD_FRAME = false;
-std::map<int, int> keyNumMap = {
-        {GLFW_KEY_1, 1},
-        {GLFW_KEY_2, 2},
-        {GLFW_KEY_3, 3},
-        // {GLFW_KEY_4, 4},
-        // {GLFW_KEY_5, 5},
-        // {GLFW_KEY_6, 6},
-        // {GLFW_KEY_7, 7},
-        // {GLFW_KEY_8, 8},
-        // {GLFW_KEY_9, 9}
-};
-int SELECTED_COLOR = 1;
 std::array<GLubyte, 16> densities = {
         0,
         100,
@@ -158,30 +141,3 @@ std::array<std::function<void(std::vector<GLubyte>&, int i, PGInfo&, GLubyte, st
             //STATIC, DOES NOTHING
         }
 };
-
-void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
-{
-    if (button == GLFW_MOUSE_BUTTON_LEFT)
-    {
-        if(action == GLFW_PRESS) {
-            MOUSE_CLICKED = true;
-        } else if (action == GLFW_RELEASE) {
-            MOUSE_CLICKED = false;
-        } else {
-            printf("third thing %d", action);
-        }
-    }
-}
-
-void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
-{
-    MOUSEX = xpos;
-    MOUSEY = ypos;
-}
-
-void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
-{
-    if(keyNumMap.find(key) != keyNumMap.end()) {
-        SELECTED_COLOR = keyNumMap.at(key);
-    }
-}
