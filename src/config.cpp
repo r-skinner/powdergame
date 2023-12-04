@@ -1,0 +1,7 @@
+#include "config.h"
+
+float RATIO = 0.1f;
+int WINDOW_WIDTH = 1080;
+int WINDOW_HEIGHT = 760;
+int DISPLAY_WIDTH = WINDOW_WIDTH * RATIO;
+int DISPLAY_HEIGHT = WINDOW_HEIGHT * RATIO;
