@@ -100,9 +100,6 @@ std::array<std::function<void(std::vector<GLubyte>&, int i, PGInfo&, GLubyte, st
                 pixs[bottomi] |= cbh;
                 pixs[bottomi] &= info.CLEAR_FLAG_BITS;
 
-                flagBitsHere &= info.CLEAR_ODD_BIT;
-                flagBitsHere |= info.nonTargetOddBit;
-
                 pixs[bottomi] &= info.CLEAR_ODD_BIT;
                 pixs[bottomi] |= info.nonTargetOddBit;
                 pixs[i] &= info.CLEAR_ODD_BIT;

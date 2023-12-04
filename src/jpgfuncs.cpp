@@ -2,12 +2,13 @@
 #include "jpgglobals.h"
 #include "config.h"
 #include "utils.h"
+#include "materials/material.h"
 
 using namespace std;
 
-void updateSimulations(std::vector<GLubyte> &pixs, bool &oddf) {
 
-    static PGInfo info;
+static PGInfo info;
+void updateSimulations(std::vector<GLubyte> &pixs, bool &oddf) {
 
     info.targetOddBit = info.oddFrame ? 0b10000000 : 0b00000000;
     info.nonTargetOddBit = info.oddFrame ? 0b00000000 : 0b10000000;
@@ -17,9 +18,9 @@ void updateSimulations(std::vector<GLubyte> &pixs, bool &oddf) {
         for (int x = 0; x < DISPLAY_WIDTH; x++) {
             int i = y * DISPLAY_WIDTH + x;
 
-            GLubyte colorBitsHere = pixs[i] & PGInfo::COLOR_BITS;
+            GLubyte colorBitsHere = pixs[i] & info.COLOR_BITS;
 
-            if (colorBitsHere != 0b00000000 && (pixs[i] & PGInfo::ODD_BIT) == info.targetOddBit
+            if (colorBitsHere != 0b00000000 && (pixs[i] & info.ODD_BIT) == info.targetOddBit
                 && i != DISPLAY_WIDTH * (DISPLAY_HEIGHT - 1)) {
                 POWDER_FUNCS[colorBitsHere](pixs, i, info, colorBitsHere, densities);
             }
@@ -38,7 +39,7 @@ void drawAtCursor(vector<GLubyte> &pixs, int selectedColor) {
     int index = dy * DISPLAY_WIDTH + dx;
 
     GLubyte theByte = selectedColor;
-    theByte |= PGInfo::LIQUID_TRAV_LEFT_BIT;
+    theByte |= info.LIQUID_TRAV_LEFT_BIT;
 
     if (index != DISPLAY_WIDTH * (DISPLAY_HEIGHT - 1)) {
         pixs[index] = theByte;

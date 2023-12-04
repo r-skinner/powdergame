@@ -22,7 +22,7 @@ extern GLubyte SELECTED_COLOR;
 
 int load_text(const char *fp, std::string &out);
 
-void load_icon(GLFWwindow* window, std::string filename);
+void load_icon(GLFWwindow* window, const std::string& filename);
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
 

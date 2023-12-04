@@ -2,7 +2,7 @@
 #define POWDERGAMEO_JPGFUNCS_H
 
 #include <functional>
-#include "pginfo.h"
+#include <GL/glew.h>
 
 void updateSimulations(std::vector<GLubyte> &pixs, bool &oddf);
 

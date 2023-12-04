@@ -47,12 +47,12 @@ void cursor_position_callback(GLFWwindow *window, double xpos, double ypos) {
 }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    if (key >= NUM_BAR_0 & key <= NUM_BAR_9) {
-        SELECTED_COLOR = key - NUM_BAR_0;
+    if (key >= GLFW_KEY_0 & key <= GLFW_KEY_9) {
+        SELECTED_COLOR = key - GLFW_KEY_0;
     }
 }
 
-void load_icon(GLFWwindow *window, std::string filename) {
+void load_icon(GLFWwindow *window, const std::string& filename) {
     int width, height, channels;
     unsigned char *iconData = stbi_load(filename.c_str(), &width, &height, &channels, 0);
     if (!iconData) {

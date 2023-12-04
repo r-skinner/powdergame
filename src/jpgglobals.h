@@ -7,7 +7,7 @@
 #include <array>
 #include <functional>
 #include <glm/vec3.hpp>
-#include "pginfo.h"
+#include "materials/material.h"
 
 
 extern std::array<std::function<void(std::vector<GLubyte>&, int i, PGInfo&, GLubyte, std::array<GLubyte, 16>)>, 16> POWDER_FUNCS;
