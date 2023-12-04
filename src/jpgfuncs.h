@@ -3,6 +3,7 @@
 
 #include <functional>
 #include <GL/glew.h>
+#include <vector>
 
 void updateSimulations(std::vector<GLubyte> &pixs, bool &oddf);
 

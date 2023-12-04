@@ -4,7 +4,7 @@
 #include "utils.h"
 #include "materials/material.h"
 
-using namespace std;
+
 
 
 static PGInfo info;
@@ -30,7 +30,7 @@ void updateSimulations(std::vector<GLubyte> &pixs, bool &oddf) {
     oddf = info.oddFrame;
 }
 
-void drawAtCursor(vector<GLubyte> &pixs, int selectedColor) {
+void drawAtCursor(std::vector<GLubyte> &pixs, int selectedColor) {
     double yp = WINDOW_HEIGHT - mouse.y;
 
     int dx = static_cast<int>(mouse.x * RATIO);
