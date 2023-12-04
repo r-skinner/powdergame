@@ -1,3 +1,4 @@
+#include <cstdio>
 #include "config.h"
 #include "jpgglobals.h"
 
@@ -166,6 +167,8 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
             MOUSE_CLICKED = true;
         } else if (action == GLFW_RELEASE) {
             MOUSE_CLICKED = false;
+        } else {
+            printf("third thing %d", action);
         }
     }
 }
