@@ -22,3 +22,5 @@ find_package(glm CONFIG REQUIRED)
 target_link_libraries(main PRIVATE glm::glm)
 find_package(GLEW REQUIRED)
 target_link_libraries(main PRIVATE GLEW::GLEW)
+
+install(TARGETS main DESTINATION ${CMAKE_SOURCE_DIR}/build)
