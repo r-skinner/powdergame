@@ -1,16 +1,8 @@
-#include <iostream>
 #include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <vector> 
-#include <cstdlib>
-#include <array>
 
-
-#define TEXT_LOADER_IMPLEMENTATION
-#define JPGFUNCS_IMPLEMENTATION
-#define JPG_CALLBACK_IMPLEMENTATION
+#include "config.h"
+#include "utils.h"
 #include "jpgfuncs.h"
 #include "jpgglobals.h"
 
@@ -18,15 +10,21 @@
 #include "stb_image.h"
 
 
+using namespace std;
+
 //Uncomment this stuff to remove console when done:
 //#include <Windows.h>
 //int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow) {
 int main() {
-    std::cout << "Display width: " << DWIDTH << '\n' 
-              << "Display height: " << DHEIGHT << '\n';
+    printf("Display width: %d\n", WINDOW_WIDTH);
+    printf("Display height: %d\n", WINDOW_HEIGHT);
+
+    std::vector<GLubyte> PIXELS(DISPLAY_WIDTH * DISPLAY_HEIGHT);
+
     glfwInit();
     glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-    if (!(WINDOW = glfwCreateWindow(WWIDTH, WHEIGHT, "Jackson's Powder Game", NULL, NULL))) {
+    GLFWwindow* WINDOW;
+    if (!(WINDOW = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT, "Jackson's Powder Game", nullptr, nullptr))) {
         glfwTerminate();
         return EXIT_FAILURE;
     }
@@ -35,7 +33,7 @@ int main() {
     int width, height, channels;
     unsigned char* iconData = stbi_load("assets/pngicon.png", &width, &height, &channels, 0);
     if (!iconData) {
-        std::cerr << "Failed to load icon: " << stbi_failure_reason() << std::endl;
+        fprintf(stderr,"Failed to load icon: %s", stbi_failure_reason());
     }
     if (iconData) {
         GLFWimage icon;
@@ -54,19 +52,19 @@ int main() {
     glfwSetCursorPosCallback(WINDOW, cursor_position_callback);
     glfwSetKeyCallback(WINDOW, key_callback);
 
-    std::string vertexShaderSrc;
-    std::string fragmentShaderSrc;
-    load_text("shad/vert.glsl", vertexShaderSrc);
-    load_text("shad/frag.glsl", fragmentShaderSrc);
+    string vertexShaderSrc;
+    string fragmentShaderSrc;
+    load_text("assets/shaders/vert.glsl", vertexShaderSrc);
+    load_text("assets/shaders/frag.glsl", fragmentShaderSrc);
     const GLchar *vertexGLChars = vertexShaderSrc.c_str();
     const GLchar *fragGLChars = fragmentShaderSrc.c_str();
 
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertexShader, 1, &vertexGLChars, NULL);
+    glShaderSource(vertexShader, 1, &vertexGLChars, nullptr);
     glCompileShader(vertexShader);
 
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragmentShader, 1, &fragGLChars, NULL);
+    glShaderSource(fragmentShader, 1, &fragGLChars, nullptr);
     glCompileShader(fragmentShader);
 
     SHADER_PROG1 = glCreateProgram();
@@ -80,7 +78,7 @@ int main() {
     glGenTextures(1, &TEXTURE_ID);
     glBindTexture(GL_TEXTURE_2D, TEXTURE_ID);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, DWIDTH, DHEIGHT, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, DISPLAY_WIDTH, DISPLAY_HEIGHT, 0, GL_RED, GL_UNSIGNED_BYTE, NULL);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -127,27 +125,27 @@ int main() {
         glClear(GL_COLOR_BUFFER_BIT);
 
         if(MOUSE_CLICKED) {
-            jpg::draw_at_cursor(MOUSEX, MOUSEY, PIXELS, WHEIGHT, RATIO, DWIDTH, DHEIGHT, SELECTED_COLOR, ODD_FRAME);
+            draw_at_cursor(MOUSEX, MOUSEY, PIXELS, WINDOW_HEIGHT, RATIO, DISPLAY_WIDTH, DISPLAY_HEIGHT, SELECTED_COLOR, ODD_FRAME);
         }
 
-        PIXELS[DWIDTH * (DHEIGHT-1)] = SELECTED_COLOR;
+        PIXELS[DISPLAY_WIDTH * (DISPLAY_HEIGHT-1)] = SELECTED_COLOR;
 
         //jpg::randomize_noise_test();
         if(updateSimTimer > 0.025) {
-            jpg::UPDATE_SIMULATION(PIXELS, DWIDTH, DHEIGHT, POWDER_FUNCS, ODD_FRAME, densities);
+            UPDATE_SIMULATION(PIXELS, DISPLAY_WIDTH, DISPLAY_HEIGHT, POWDER_FUNCS, ODD_FRAME, densities);
 
             updateSimTimer = 0.0;
         } else {
             updateSimTimer += DELTA_TIME;
         }
 
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, DWIDTH, DHEIGHT, GL_RED, GL_UNSIGNED_BYTE, PIXELS.data());
+        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, DISPLAY_WIDTH, DISPLAY_HEIGHT, GL_RED, GL_UNSIGNED_BYTE, PIXELS.data());
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         glfwSwapBuffers(WINDOW);
         glfwPollEvents();
-        jpg::update_time(DELTA_TIME, LAST_FRAME);
+        update_time(DELTA_TIME, LAST_FRAME);
     }
 
     glfwDestroyWindow(WINDOW);

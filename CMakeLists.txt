@@ -3,7 +3,13 @@ cmake_minimum_required(VERSION 3.10)
 # set the project name
 project(powdergameo)
 
-add_executable(main src/main.cpp)
+add_executable(main
+        src/main.cpp
+        src/config.cpp
+        src/jpgglobals.cpp
+        src/jpgfuncs.cpp
+        src/utils.cpp
+)
 
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 20)
@@ -22,3 +28,5 @@ find_package(glm CONFIG REQUIRED)
 target_link_libraries(main PRIVATE glm::glm)
 find_package(GLEW REQUIRED)
 target_link_libraries(main PRIVATE GLEW::GLEW)
+
+install(TARGETS main DESTINATION ${CMAKE_SOURCE_DIR}/build)
