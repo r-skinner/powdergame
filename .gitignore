@@ -1,4 +1,7 @@
 /build
-main.exe
-glfw3.dll
+*.exe
 glew32.dll
+.vscode/
+cmake-build-debug
+.idea
+build

@@ -15,14 +15,11 @@ endif()
 
 target_include_directories(main PUBLIC ${CMAKE_SOURCE_DIR}/include)
 
-find_package(imgui CONFIG REQUIRED)
-target_link_libraries(main PRIVATE imgui::imgui)
-
-find_package(EnTT CONFIG REQUIRED)
-target_link_libraries(main PRIVATE EnTT::EnTT)
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(main PRIVATE glfw)
 find_package(glm CONFIG REQUIRED)
 target_link_libraries(main PRIVATE glm::glm)
 find_package(GLEW REQUIRED)
 target_link_libraries(main PRIVATE GLEW::GLEW)
+
+install(TARGETS main DESTINATION ${CMAKE_SOURCE_DIR}/build)
